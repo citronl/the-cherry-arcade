@@ -398,6 +398,16 @@
       </div>
     </div>
 
+    <div class="game-card" onclick="openLHS()">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">LAST HUMAN STANDING</div>
+      <div class="card-desc">Pick one PL team to win or draw each gameweek. Use each team once. Last one standing wins. Main + backup pick every week.</div>
+      <div class="card-meta">
+        <span class="badge badge-live">Survival</span>
+        <span class="badge badge-season">Season Long</span>
+      </div>
+    </div>
+
     <div class="game-card coming-soon">
       <div class="card-icon">📅</div>
       <div class="card-title">FIXTURES & TABLE</div>
@@ -528,6 +538,87 @@
 
 <div id="toast"></div>
 
+<div id="lhsModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>🧠 LAST HUMAN STANDING</h2>
+      <button class="modal-close" onclick="closeModal('lhsModal')">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- no active cycle -->
+      <div id="lhsNoCycle" style="display:none;text-align:center;padding:40px 0;">
+        <div style="font-size:36px;margin-bottom:12px;">🏴</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:8px;">NO ACTIVE CYCLE</div>
+        <div style="font-size:13px;color:var(--muted);">Last Human Standing isn't running right now. Check back soon.</div>
+      </div>
+
+      <!-- waiting to enter (mid-cycle) -->
+      <div id="lhsWaiting" style="display:none;text-align:center;padding:40px 0;">
+        <div style="font-size:36px;margin-bottom:12px;">⏳</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:8px;">CYCLE IN PROGRESS</div>
+        <div style="font-size:13px;color:var(--muted);max-width:280px;margin:0 auto;">A cycle is already running. You can join the next one when it starts.</div>
+      </div>
+
+      <!-- eliminated -->
+      <div id="lhsEliminated" style="display:none;text-align:center;padding:32px 0;">
+        <div style="font-size:36px;margin-bottom:12px;">💀</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--cherry);margin-bottom:8px;">ELIMINATED</div>
+        <div id="lhsEliminatedGW" style="font-size:13px;color:var(--muted);margin-bottom:20px;"></div>
+      </div>
+
+      <!-- active player view -->
+      <div id="lhsActive" style="display:none;">
+
+        <!-- status banner -->
+        <div id="lhsStatusBanner" style="margin-bottom:16px;"></div>
+
+        <!-- current gameweek pick -->
+        <div id="lhsPickSection" style="display:none;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;margin-bottom:4px;" id="lhsGWLabel"></div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Deadline: <span id="lhsDeadline" style="color:var(--text);font-family:'DM Mono',monospace;"></span></div>
+
+          <div id="lhsPickLockBanner" class="lock-banner" style="display:none;">🔒 Picks are locked for this gameweek.</div>
+
+          <div id="lhsPickForm">
+            <div style="margin-bottom:14px;">
+              <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Main Pick</div>
+              <select id="lhsMainPick" onchange="updateLHSBackupOptions()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+                <option value="">— select team —</option>
+              </select>
+            </div>
+            <div id="lhsBackupWrap" style="margin-bottom:16px;">
+              <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Backup Pick</div>
+              <select id="lhsBackupPick" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+                <option value="">— select team —</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="saveLHSPick()">Save Pick</button>
+          </div>
+        </div>
+
+        <!-- used teams -->
+        <div style="margin-top:20px;">
+          <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Your Teams</div>
+          <div id="lhsMyTeams" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+
+        <!-- pool reset notice -->
+        <div id="lhsResetNotice" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(240,180,41,0.08);border:1px solid rgba(240,180,41,0.25);border-radius:8px;font-size:12px;color:var(--gold);">
+          🔄 You've used all 20 teams — pool reset! No backup pick this cycle.
+        </div>
+      </div>
+
+      <!-- standings — always visible once cycle active -->
+      <div id="lhsStandings" style="display:none;margin-top:24px;">
+        <div style="font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Standings</div>
+        <div id="lhsStandingsList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════════════
      FANTASY BOURNEMOUTH MODAL
 ══════════════════════════════════════════════════ -->
@@ -618,6 +709,7 @@
         <button class="modal-tab" onclick="switchAdminTab('fantasy')">Fantasy</button>
         <button class="modal-tab" onclick="switchAdminTab('fixtures')">Fixtures</button>
         <button class="modal-tab" onclick="switchAdminTab('season')">Season</button>
+        <button class="modal-tab" onclick="switchAdminTab('lhs')">LHS</button>
       </div>
 
       <!-- ACTUAL LINEUPS TAB -->
@@ -744,12 +836,60 @@
         </div>
       </div>
 
+      <!-- LHS TAB -->
+      <div id="adminTabLhs" style="display:none;">
+        <p class="modal-note">Manage Last Human Standing cycles, gameweeks and results.</p>
+
+        <!-- cycle management -->
+        <div id="adminLhsCycleSection">
+          <div id="adminLhsActiveCycle" style="margin-bottom:16px;"></div>
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:12px;">START NEW CYCLE</div>
+            <button class="btn btn-primary" style="width:100%" onclick="createLHSCycle()">Start New Cycle</button>
+          </div>
+        </div>
+
+        <!-- gameweek management -->
+        <div id="adminLhsGWSection" style="display:none;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:12px;">GAMEWEEKS</div>
+          <div id="adminLhsGWList" style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px;"></div>
+
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:12px;">ADD GAMEWEEK</div>
+            <div class="field">
+              <label>Label (e.g. GW1)</label>
+              <input type="text" id="lhsGWLabel" placeholder="GW1" maxlength="10">
+            </div>
+            <div class="field">
+              <label>Pick Deadline</label>
+              <input type="datetime-local" id="lhsGWDeadline">
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="createLHSGameweek()">Add Gameweek</button>
+          </div>
+        </div>
+
+        <!-- results entry -->
+        <div id="adminLhsResultsSection" style="display:none;margin-top:16px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;margin-bottom:12px;">ENTER RESULTS</div>
+          <div class="field">
+            <label>Gameweek</label>
+            <select id="adminLhsGWSelect" onchange="loadLHSResultsForm()">
+              <option value="">— select gameweek —</option>
+            </select>
+          </div>
+          <div id="adminLhsResultsForm" style="display:none;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Mark each team's result for this gameweek.</div>
+            <div id="adminLhsTeamResults" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="saveLHSResults()">Save Results & Resolve</button>
+            <div id="adminLhsResolveMsg" style="margin-top:10px;font-size:13px;color:var(--muted);"></div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 </div>
-
-<!-- ══════════════════════════════════════════════════
-     FIREBASE + APP
 ══════════════════════════════════════════════════ -->
 <script type="module">
 
@@ -768,8 +908,8 @@ const FIREBASE_CONFIG = {
 
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, doc, setDoc, getDoc,
-  collection, getDocs, query, orderBy, serverTimestamp
+  getFirestore, doc, setDoc, getDoc, deleteDoc,
+  collection, getDocs, query, orderBy, where, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth, createUserWithEmailAndPassword,
@@ -1727,11 +1867,13 @@ window.switchAdminTab = (tab) => {
   document.getElementById('adminTabFantasy').style.display  = tab === 'fantasy'  ? '' : 'none';
   document.getElementById('adminTabFixtures').style.display = tab === 'fixtures' ? '' : 'none';
   document.getElementById('adminTabSeason').style.display   = tab === 'season'   ? '' : 'none';
+  document.getElementById('adminTabLhs').style.display      = tab === 'lhs'      ? '' : 'none';
   document.querySelectorAll('#adminTabs .modal-tab').forEach((t, i) =>
-    t.classList.toggle('active', ['lineup','scores','fantasy','fixtures','season'][i] === tab));
+    t.classList.toggle('active', ['lineup','scores','fantasy','fixtures','season','lhs'][i] === tab));
   if (tab === 'fixtures') renderAdminFixturesList();
   if (tab === 'fantasy')  { refreshFantasyAdminDropdown(); document.getElementById('adminFantasyForm').style.display = 'none'; }
   if (tab === 'season')   renderAdminSeasonList();
+  if (tab === 'lhs')      loadAdminLHS();
 };
 
 window.loadAdminLineup = async () => {
@@ -2575,6 +2717,537 @@ window.deleteSeason = async (seasonId) => {
   } catch (e) { toast('Failed to delete season.', 'error'); }
 };
 
+
+// ══════════════════════════════════════════════════════
+//  LAST HUMAN STANDING
+// ══════════════════════════════════════════════════════
+
+const PL_TEAMS_LHS = [
+  'Arsenal','Aston Villa','AFC Bournemouth','Brentford','Brighton & Hove Albion',
+  'Chelsea','Coventry City','Crystal Palace','Everton','Fulham',
+  'Hull City','Ipswich Town','Leeds United','Liverpool','Manchester City',
+  'Manchester United','Newcastle United','Nottingham Forest','Sunderland','Tottenham Hotspur'
+];
+
+let lhsActiveCycle   = null;  // { id, status, createdAt }
+let lhsActiveGW      = null;  // { id, label, deadline, status, cycleId }
+let lhsAllGWs        = [];
+let lhsMyPlayer      = null;  // { status, usedTeams, cycleCount, hasBackup }
+let lhsAllPlayers    = {};    // uid -> { displayName, status, usedTeams, cycleCount }
+
+// ── Load LHS state ──────────────────────────────────
+async function loadLHSState() {
+  try {
+    // Load active cycle
+    const cycleSnap = await getDocs(query(
+      collection(db, 'lmsCycles'),
+      where('status', '==', 'active'),
+      limit(1)
+    ));
+    lhsActiveCycle = null;
+    lhsAllGWs      = [];
+    lhsActiveGW    = null;
+
+    if (!cycleSnap.empty) {
+      const d = cycleSnap.docs[0];
+      lhsActiveCycle = { id: d.id, ...d.data() };
+
+      // Load gameweeks for this cycle
+      const gwSnap = await getDocs(query(
+        collection(db, 'lmsGameweeks'),
+        where('cycleId', '==', lhsActiveCycle.id),
+        orderBy('createdAt', 'asc')
+      ));
+      gwSnap.forEach(d => lhsAllGWs.push({ id: d.id, ...d.data() }));
+
+      // Active GW = last open or locked one
+      lhsActiveGW = [...lhsAllGWs].reverse().find(g => g.status !== 'resolved') || null;
+
+      // Load my player record
+      if (currentUser) {
+        const mySnap = await getDoc(doc(db, 'lmsPlayers', lhsActiveCycle.id, 'players', currentUser.uid));
+        lhsMyPlayer = mySnap.exists() ? mySnap.data() : null;
+      }
+
+      // Load all players
+      const allSnap = await getDocs(collection(db, 'lmsPlayers', lhsActiveCycle.id, 'players'));
+      lhsAllPlayers = {};
+      allSnap.forEach(d => { lhsAllPlayers[d.id] = d.data(); });
+    }
+  } catch (e) { console.error('loadLHSState', e); }
+}
+
+// ── Open LHS modal ──────────────────────────────────
+window.openLHS = async () => {
+  if (!currentUser) return;
+  await loadLHSState();
+
+  // Hide all sections first
+  ['lhsNoCycle','lhsWaiting','lhsEliminated','lhsActive','lhsStandings'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+
+  if (!lhsActiveCycle) {
+    document.getElementById('lhsNoCycle').style.display = '';
+    document.getElementById('lhsModal').classList.add('open');
+    return;
+  }
+
+  // Load my pick for active GW
+  let myPick = null;
+  if (lhsActiveGW && lhsMyPlayer) {
+    try {
+      const pickSnap = await getDoc(doc(db, 'lmsPicks', lhsActiveGW.id, 'picks', currentUser.uid));
+      if (pickSnap.exists()) myPick = pickSnap.data();
+    } catch {}
+  }
+
+  // Determine what to show
+  if (!lhsMyPlayer) {
+    // Not registered — can they join?
+    const anyResolved = lhsAllGWs.some(g => g.status === 'resolved');
+    if (anyResolved) {
+      document.getElementById('lhsWaiting').style.display = '';
+    } else {
+      // First GW not yet resolved — they can join
+      await registerLHSPlayer();
+      await loadLHSState();
+      renderLHSActive(myPick);
+    }
+  } else if (lhsMyPlayer.status === 'eliminated') {
+    document.getElementById('lhsEliminated').style.display = '';
+    const gw = lhsAllGWs.find(g => g.id === lhsMyPlayer.eliminatedGW);
+    document.getElementById('lhsEliminatedGW').textContent =
+      gw ? `Eliminated in ${gw.label}` : 'Eliminated';
+    renderLHSMyTeams();
+    document.getElementById('lhsActive').style.display = '';
+    document.getElementById('lhsPickSection').style.display = 'none';
+  } else {
+    renderLHSActive(myPick);
+  }
+
+  renderLHSStandings();
+  document.getElementById('lhsModal').classList.add('open');
+};
+
+async function registerLHSPlayer() {
+  if (!currentUser || !lhsActiveCycle) return;
+  await setDoc(doc(db, 'lmsPlayers', lhsActiveCycle.id, 'players', currentUser.uid), {
+    displayName: currentUserData?.displayName || '',
+    username:    currentUserData?.username    || '',
+    status:      'alive',
+    usedTeams:   [],
+    cycleCount:  0,
+    hasBackup:   true,
+    joinedAt:    serverTimestamp()
+  });
+}
+
+function renderLHSActive(myPick) {
+  document.getElementById('lhsActive').style.display = '';
+
+  // Status banner
+  const banner = document.getElementById('lhsStatusBanner');
+  const alive = lhsMyPlayer?.status === 'alive';
+  banner.innerHTML = alive
+    ? `<div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--green);">✅ You're still in!</div>`
+    : '';
+
+  // Pool reset notice
+  const resetNotice = document.getElementById('lhsResetNotice');
+  resetNotice.style.display = lhsMyPlayer?.cycleCount > 0 && !lhsMyPlayer?.hasBackup ? '' : 'none';
+
+  renderLHSMyTeams();
+
+  // Pick section
+  const pickSection = document.getElementById('lhsPickSection');
+  if (!lhsActiveGW || lhsMyPlayer?.status !== 'alive') {
+    pickSection.style.display = 'none';
+    return;
+  }
+
+  pickSection.style.display = '';
+  document.getElementById('lhsGWLabel').textContent = lhsActiveGW.label;
+
+  const deadline = lhsActiveGW.deadline ? new Date(lhsActiveGW.deadline) : null;
+  document.getElementById('lhsDeadline').textContent = deadline
+    ? deadline.toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+    : 'TBC';
+
+  const locked = lhsPickIsLocked();
+  document.getElementById('lhsPickLockBanner').style.display = locked ? 'flex' : 'none';
+  document.getElementById('lhsPickForm').style.display = locked ? 'none' : '';
+
+  if (!locked) {
+    populateLHSDropdowns(myPick);
+  } else if (myPick) {
+    // Show locked summary
+    document.getElementById('lhsPickForm').style.display = '';
+    document.getElementById('lhsPickForm').innerHTML = `
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;">
+        <div style="margin-bottom:6px;"><span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;">Main</span><br><strong>${escapeHtml(myPick.main)}</strong></div>
+        ${myPick.backup ? `<div><span style="color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;">Backup</span><br><strong>${escapeHtml(myPick.backup)}</strong></div>` : ''}
+      </div>`;
+  }
+}
+
+function populateLHSDropdowns(myPick) {
+  const used     = new Set(lhsMyPlayer?.usedTeams || []);
+  const hasBackup = lhsMyPlayer?.hasBackup !== false;
+  const available = PL_TEAMS_LHS.filter(t => !used.has(t));
+
+  const mainSel   = document.getElementById('lhsMainPick');
+  const backupSel = document.getElementById('lhsBackupPick');
+  const backupWrap = document.getElementById('lhsBackupWrap');
+
+  mainSel.innerHTML = `<option value="">— select team —</option>` +
+    available.map(t => `<option value="${t}" ${myPick?.main === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('');
+
+  if (!hasBackup) {
+    backupWrap.style.opacity = '0.4';
+    backupWrap.style.pointerEvents = 'none';
+    backupSel.innerHTML = `<option value="">No backup this cycle</option>`;
+    backupSel.disabled = true;
+  } else {
+    backupWrap.style.opacity = '';
+    backupWrap.style.pointerEvents = '';
+    backupSel.disabled = false;
+    updateLHSBackupOptions(myPick?.backup);
+  }
+}
+
+window.updateLHSBackupOptions = (preserveVal) => {
+  const mainVal   = document.getElementById('lhsMainPick').value;
+  const backupSel = document.getElementById('lhsBackupPick');
+  const used      = new Set(lhsMyPlayer?.usedTeams || []);
+  const available = PL_TEAMS_LHS.filter(t => !used.has(t) && t !== mainVal);
+  const current   = preserveVal || backupSel.value;
+  backupSel.innerHTML = `<option value="">— select backup —</option>` +
+    available.map(t => `<option value="${t}" ${t === current ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('');
+};
+
+function renderLHSMyTeams() {
+  const el    = document.getElementById('lhsMyTeams');
+  const used  = new Set(lhsMyPlayer?.usedTeams || []);
+  el.innerHTML = PL_TEAMS_LHS.map(t => {
+    const isUsed = used.has(t);
+    return `<span style="font-size:11px;padding:4px 8px;border-radius:20px;border:1px solid ${isUsed ? 'rgba(218,41,28,0.4)' : 'var(--border)'};color:${isUsed ? 'var(--cherry)' : 'var(--muted)'};background:${isUsed ? 'rgba(218,41,28,0.08)' : 'transparent'};text-decoration:${isUsed ? 'line-through' : 'none'};">${escapeHtml(t)}</span>`;
+  }).join('');
+}
+
+function renderLHSStandings() {
+  const el = document.getElementById('lhsStandings');
+  if (!lhsActiveCycle || Object.keys(lhsAllPlayers).length === 0) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = '';
+  const deadline = lhsActiveGW?.deadline ? new Date(lhsActiveGW.deadline) : null;
+  const deadlinePassed = deadline ? new Date() >= deadline : false;
+
+  const alive = [], dead = [];
+  Object.entries(lhsAllPlayers).forEach(([uid, p]) => {
+    (p.status === 'alive' ? alive : dead).push({ uid, ...p });
+  });
+  alive.sort((a,b) => (a.displayName||'').localeCompare(b.displayName||''));
+  dead.sort((a,b) => (a.displayName||'').localeCompare(b.displayName||''));
+
+  const renderPlayer = (p) => {
+    const used = p.usedTeams || [];
+    const isMe = p.uid === currentUser?.uid;
+    return `
+      <div style="background:rgba(255,255,255,0.03);border:1px solid ${p.status==='alive' ? 'rgba(46,204,113,0.2)' : 'var(--border)'};border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:600;">${escapeHtml(p.displayName)}${isMe ? ' <span style="font-size:10px;color:var(--muted);font-family:\'DM Mono\',monospace;">YOU</span>' : ''}</div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:${p.status==='alive' ? 'var(--green)' : 'var(--cherry)'};">${p.status === 'alive' ? '✅ ALIVE' : '💀 OUT'}</div>
+        </div>
+        ${deadlinePassed || isMe ? `<div style="display:flex;flex-wrap:wrap;gap:4px;">${used.map(t => `<span style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(218,41,28,0.1);color:var(--cherry);border:1px solid rgba(218,41,28,0.2);">${escapeHtml(t)}</span>`).join('')}</div>` : `<div style="font-size:11px;color:var(--muted);">Picks hidden until deadline</div>`}
+      </div>`;
+  };
+
+  document.getElementById('lhsStandingsList').innerHTML =
+    (alive.length ? `<div style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:6px;">STILL IN (${alive.length})</div>` + alive.map(renderPlayer).join('') : '') +
+    (dead.length  ? `<div style="font-size:10px;color:var(--cherry);font-family:'DM Mono',monospace;letter-spacing:1px;margin:12px 0 6px;">ELIMINATED (${dead.length})</div>` + dead.map(renderPlayer).join('') : '');
+}
+
+function lhsPickIsLocked() {
+  if (!lhsActiveGW?.deadline) return false;
+  return new Date() >= new Date(lhsActiveGW.deadline);
+}
+
+window.saveLHSPick = async () => {
+  if (!currentUser || !lhsActiveGW) return;
+  if (lhsPickIsLocked()) return toast('Picks are locked for this gameweek.', 'error');
+
+  const main   = document.getElementById('lhsMainPick').value;
+  const backup = lhsMyPlayer?.hasBackup !== false ? document.getElementById('lhsBackupPick').value : '';
+  if (!main) return toast('Please select a main team.', 'error');
+  if (lhsMyPlayer?.hasBackup !== false && !backup) return toast('Please select a backup team.', 'error');
+  if (main === backup) return toast('Main and backup must be different teams.', 'error');
+
+  try {
+    await setDoc(doc(db, 'lmsPicks', lhsActiveGW.id, 'picks', currentUser.uid), {
+      main, backup: backup || '', savedAt: serverTimestamp()
+    });
+    toast('Pick saved! 🧠', 'success');
+    closeModal('lhsModal');
+    openLHS();
+  } catch { toast('Save failed.', 'error'); }
+};
+
+// ── ADMIN: LHS ───────────────────────────────────────
+window.loadAdminLHS = async () => {
+  if (!isAdmin()) return;
+  await loadLHSState();
+  renderAdminLHSCycle();
+};
+
+function renderAdminLHSCycle() {
+  const cycleEl = document.getElementById('adminLhsActiveCycle');
+  const gwSec   = document.getElementById('adminLhsGWSection');
+  const resSec  = document.getElementById('adminLhsResultsSection');
+
+  if (!lhsActiveCycle) {
+    cycleEl.innerHTML = `<div style="font-size:13px;color:var(--muted);">No active cycle. Start one below.</div>`;
+    gwSec.style.display  = 'none';
+    resSec.style.display = 'none';
+    return;
+  }
+
+  const aliveCt = Object.values(lhsAllPlayers).filter(p => p.status === 'alive').length;
+  const totalCt = Object.keys(lhsAllPlayers).length;
+  cycleEl.innerHTML = `
+    <div style="background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.2);border-radius:8px;padding:12px 14px;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">🟢 Active Cycle</div>
+      <div style="font-size:12px;color:var(--muted);">${totalCt} player(s) · ${aliveCt} alive</div>
+    </div>
+    <button class="btn btn-sm" style="background:rgba(218,41,28,0.15);color:var(--cherry);border:1px solid rgba(218,41,28,0.3);width:100%;margin-bottom:4px;" onclick="completeLHSCycle()">Complete & Archive Cycle</button>`;
+
+  gwSec.style.display  = '';
+  resSec.style.display = '';
+  renderAdminLHSGWList();
+  refreshAdminLHSGWSelect();
+}
+
+function renderAdminLHSGWList() {
+  const el = document.getElementById('adminLhsGWList');
+  if (!lhsAllGWs.length) {
+    el.innerHTML = `<div style="font-size:13px;color:var(--muted);">No gameweeks yet.</div>`;
+    return;
+  }
+  el.innerHTML = lhsAllGWs.map(gw => {
+    const dl = gw.deadline ? new Date(gw.deadline).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : 'No deadline';
+    const statusColor = gw.status === 'resolved' ? 'var(--green)' : gw.status === 'locked' ? 'var(--gold)' : 'var(--muted)';
+    return `
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;">${escapeHtml(gw.label)}</div>
+          <div style="font-size:11px;color:var(--muted);">Deadline: ${dl}</div>
+        </div>
+        <div style="font-size:11px;font-family:'DM Mono',monospace;color:${statusColor};text-transform:uppercase;">${gw.status}</div>
+      </div>`;
+  }).join('');
+}
+
+function refreshAdminLHSGWSelect() {
+  const sel = document.getElementById('adminLhsGWSelect');
+  sel.innerHTML = `<option value="">— select gameweek —</option>` +
+    lhsAllGWs.filter(g => g.status !== 'resolved').map(g =>
+      `<option value="${g.id}">${escapeHtml(g.label)}</option>`).join('');
+}
+
+window.createLHSCycle = async () => {
+  if (!isAdmin()) return;
+  if (lhsActiveCycle) return toast('A cycle is already active. Complete it first.', 'error');
+  try {
+    const ref = doc(collection(db, 'lmsCycles'));
+    await setDoc(ref, { status: 'active', createdAt: serverTimestamp() });
+    toast('New cycle started! 🧠', 'success');
+    await loadLHSState();
+    renderAdminLHSCycle();
+  } catch (e) { toast('Failed: ' + e.message, 'error'); }
+};
+
+window.completeLHSCycle = async () => {
+  if (!isAdmin()) return;
+  if (!confirm('Complete and archive this cycle? Players will need to re-enter for the next one.')) return;
+  try {
+    await setDoc(doc(db, 'lmsCycles', lhsActiveCycle.id), { status: 'complete' }, { merge: true });
+    lhsActiveCycle = null;
+    toast('Cycle completed.', 'success');
+    await loadLHSState();
+    renderAdminLHSCycle();
+  } catch (e) { toast('Failed: ' + e.message, 'error'); }
+};
+
+window.createLHSGameweek = async () => {
+  if (!isAdmin() || !lhsActiveCycle) return;
+  const label    = sanitise(document.getElementById('lhsGWLabel').value, 10);
+  const deadline = document.getElementById('lhsGWDeadline').value;
+  if (!label)    return toast('Please enter a gameweek label.', 'error');
+  if (!deadline) return toast('Please set a deadline.', 'error');
+  try {
+    const ref = doc(collection(db, 'lmsGameweeks'));
+    await setDoc(ref, {
+      cycleId: lhsActiveCycle.id, label,
+      deadline: deadline.length === 16 ? deadline + ':00' : deadline,
+      status: 'open', createdAt: serverTimestamp()
+    });
+    document.getElementById('lhsGWLabel').value    = '';
+    document.getElementById('lhsGWDeadline').value = '';
+    toast(`${label} created!`, 'success');
+    await loadLHSState();
+    renderAdminLHSCycle();
+  } catch (e) { toast('Failed: ' + e.message, 'error'); }
+};
+
+window.loadLHSResultsForm = async () => {
+  const gwId = document.getElementById('adminLhsGWSelect').value;
+  const form = document.getElementById('adminLhsResultsForm');
+  if (!gwId) { form.style.display = 'none'; return; }
+
+  // Load existing results if any
+  let existing = {};
+  try {
+    const snap = await getDoc(doc(db, 'lmsGameweeks', gwId));
+    if (snap.exists()) existing = snap.data().teamResults || {};
+  } catch {}
+
+  document.getElementById('adminLhsTeamResults').innerHTML = PL_TEAMS_LHS.map(t => {
+    const v = existing[t] || '';
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+        <div style="font-size:13px;min-width:0;flex:1;">${escapeHtml(t)}</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${['W','D','L'].map(r => `
+            <button onclick="setLHSResult('${t.replace(/'/g,"\\'")}','${r}')"
+              id="lhs-res-${t.replace(/\s/g,'-')}-${r}"
+              style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;
+              background:${v===r ? (r==='W'?'rgba(46,204,113,0.3)':r==='D'?'rgba(240,180,41,0.3)':'rgba(218,41,28,0.3)') : 'rgba(255,255,255,0.04)'};
+              color:${v===r ? (r==='W'?'var(--green)':r==='D'?'var(--gold)':'var(--cherry)') : 'var(--muted)'};"
+            >${r}</button>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  form.style.display = 'block';
+};
+
+// Store results in memory before saving
+const lhsResultsMemory = {};
+window.setLHSResult = (team, result) => {
+  const gwId = document.getElementById('adminLhsGWSelect').value;
+  if (!lhsResultsMemory[gwId]) lhsResultsMemory[gwId] = {};
+  lhsResultsMemory[gwId][team] = result;
+
+  // Update button styles
+  ['W','D','L'].forEach(r => {
+    const btn = document.getElementById(`lhs-res-${team.replace(/\s/g,'-')}-${r}`);
+    if (!btn) return;
+    const active = r === result;
+    btn.style.background = active ? (r==='W'?'rgba(46,204,113,0.3)':r==='D'?'rgba(240,180,41,0.3)':'rgba(218,41,28,0.3)') : 'rgba(255,255,255,0.04)';
+    btn.style.color      = active ? (r==='W'?'var(--green)':r==='D'?'var(--gold)':'var(--cherry)') : 'var(--muted)';
+  });
+};
+
+window.saveLHSResults = async () => {
+  if (!isAdmin()) return;
+  const gwId = document.getElementById('adminLhsGWSelect').value;
+  if (!gwId) return toast('Select a gameweek first.', 'error');
+  const gw = lhsAllGWs.find(g => g.id === gwId);
+
+  // Collect results — merge memory with existing
+  const teamResults = lhsResultsMemory[gwId] || {};
+  const unset = PL_TEAMS_LHS.filter(t => !teamResults[t]);
+  if (unset.length) return toast(`Please set results for all 20 teams. Missing: ${unset.slice(0,3).join(', ')}${unset.length>3?'…':''}`, 'error');
+
+  const msg = document.getElementById('adminLhsResolveMsg');
+  msg.textContent = 'Saving and resolving…';
+
+  try {
+    // Save results to gameweek doc
+    await setDoc(doc(db, 'lmsGameweeks', gwId), { teamResults, status: 'resolved' }, { merge: true });
+
+    // Load all picks for this GW
+    const picksSnap = await getDocs(collection(db, 'lmsPicks', gwId, 'picks'));
+    let survived = 0, eliminated = 0;
+
+    for (const pickDoc of picksSnap.docs) {
+      const uid  = pickDoc.id;
+      const pick = pickDoc.data();
+
+      // Only process alive players
+      const playerRef  = doc(db, 'lmsPlayers', lhsActiveCycle.id, 'players', uid);
+      const playerSnap = await getDoc(playerRef);
+      if (!playerSnap.exists()) continue;
+      const player = playerSnap.data();
+      if (player.status !== 'alive') continue;
+
+      const mainResult   = teamResults[pick.main]   || 'L';
+      const backupResult = teamResults[pick.backup]  || 'L';
+      const mainSurvives = mainResult   === 'W' || mainResult   === 'D';
+      const backupSurvives = pick.backup && (backupResult === 'W' || backupResult === 'D');
+
+      let usedTeam = null;
+      let survives = false;
+
+      if (mainSurvives) {
+        survives = true;
+        usedTeam = pick.main;
+      } else if (!mainSurvives && backupSurvives) {
+        survives = true;
+        usedTeam = pick.backup; // main returned to pool
+      }
+
+      const newUsed = usedTeam ? [...(player.usedTeams || []), usedTeam] : player.usedTeams || [];
+
+      // Check pool reset
+      let cycleCount = player.cycleCount || 0;
+      let hasBackup  = player.hasBackup !== false;
+
+      if (survives && newUsed.length >= 20) {
+        // Pool reset
+        cycleCount++;
+        hasBackup = false; // no backup next cycle
+      } else if (survives && cycleCount > 0 && !hasBackup) {
+        // Was in no-backup cycle, completed a GW — backups return next cycle
+        // (backups return after the no-backup cycle's first GW)
+        hasBackup = true;
+      }
+
+      if (survives) {
+        survived++;
+        await setDoc(playerRef, {
+          usedTeams: newUsed.length >= 20 ? [] : newUsed,
+          cycleCount, hasBackup, status: 'alive'
+        }, { merge: true });
+      } else {
+        eliminated++;
+        await setDoc(playerRef, { status: 'eliminated', eliminatedGW: gwId }, { merge: true });
+      }
+    }
+
+    // Handle players who didn't pick — eliminate them
+    const allAlive = Object.entries(lhsAllPlayers).filter(([,p]) => p.status === 'alive');
+    const pickedUids = new Set(picksSnap.docs.map(d => d.id));
+    for (const [uid] of allAlive) {
+      if (!pickedUids.has(uid)) {
+        await setDoc(doc(db, 'lmsPlayers', lhsActiveCycle.id, 'players', uid),
+          { status: 'eliminated', eliminatedGW: gwId }, { merge: true });
+        eliminated++;
+      }
+    }
+
+    msg.innerHTML = `<span style="color:var(--green)">✅ Done. ${survived} survived, ${eliminated} eliminated.</span>`;
+    toast('GW resolved!', 'success');
+    await loadLHSState();
+    renderAdminLHSCycle();
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message;
+    toast('Failed to resolve.', 'error');
+  }
+};
+
 </script>
 
 <!-- ════════════════════════════════════════════════════
@@ -2703,6 +3376,24 @@ service cloud.firestore {
 
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    // ── LAST HUMAN STANDING ──
+    match /lmsCycles/{cycleId} {
+      allow read:  if isAuth();
+      allow write: if isAdmin();
+    }
+    match /lmsGameweeks/{gwId} {
+      allow read:  if isAuth();
+      allow write: if isAdmin();
+    }
+    match /lmsPicks/{gwId}/picks/{uid} {
+      allow read:  if isAuth();
+      allow write: if isOwner(uid);
+    }
+    match /lmsPlayers/{cycleId}/players/{uid} {
+      allow read:  if isAuth();
+      allow write: if isAdmin() || isOwner(uid);
     }
   }
 }
